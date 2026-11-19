@@ -3,557 +3,1322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memories </title>
+    <title>Lớp 12AS4 — Niên Giám Số Thanh Xuân (Online)</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Be Vietnam Pro & Dancing Script -->
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Dancing+Script:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Be Vietnam Pro"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                        hand: ['"Dancing Script"', 'cursive'],
+                    },
+                    colors: {
+                        paper: '#FAF7F2',
+                        ink: '#2C221E',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         body {
-            font-family: 'Be Vietnam Pro', sans-serif;
-            background-color: #fbf8f3;
-            color: #2c241d;
+            background-color: #FAF7F2;
+            color: #2C221E;
+            background-image: radial-gradient(#E5DDD0 0.85px, transparent 0.85px);
+            background-size: 22px 22px;
         }
-        .handwritten {
-            font-family: 'Dancing Script', cursive;
+        .washi-tape {
+            position: absolute;
+            top: -11px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-2deg);
+            width: 84px;
+            height: 22px;
+            background: rgba(245, 208, 138, 0.72);
+            backdrop-filter: blur(2px);
+            border-left: 2px dashed rgba(255, 255, 255, 0.55);
+            border-right: 2px dashed rgba(255, 255, 255, 0.55);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            z-index: 10;
+            pointer-events: none;
         }
+        .washi-rose { background: rgba(251, 182, 189, 0.72); transform: translateX(-50%) rotate(2.5deg); }
+        .washi-sage { background: rgba(183, 219, 196, 0.75); transform: translateX(-50%) rotate(-1.5deg); }
+        .washi-sky  { background: rgba(179, 217, 242, 0.75); transform: translateX(-50%) rotate(1.8deg); }
+
         .polaroid-card {
-            background: #ffffff;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #FFFFFF;
+            box-shadow: 0 4px 16px -2px rgba(44, 34, 30, 0.08), 0 1px 4px -1px rgba(44, 34, 30, 0.04);
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
         }
         .polaroid-card:hover {
-            transform: translateY(-5px) rotate(0deg) !important;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: translateY(-7px) rotate(0deg) scale(1.015) !important;
+            box-shadow: 0 22px 32px -8px rgba(44, 34, 30, 0.16), 0 8px 14px -6px rgba(44, 34, 30, 0.08);
+            z-index: 20;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+        @keyframes kenBurns {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.08) translate(-1%, -1%); }
         }
-        .animate-fade-in {
-            animation: fadeIn 0.4s ease-out forwards;
+        .animate-ken-burns { animation: kenBurns 6s ease-out forwards; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+        .animate-fade-up { animation: fadeUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-amber-200">
+<body class="min-h-screen flex flex-col justify-between selection:bg-amber-200 selection:text-amber-950">
 
-    <!-- HEADER -->
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-amber-100 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <span class="text-3xl">🌻</span>
-                <div>
-                    <h1 class="text-2xl font-bold text-amber-900 tracking-tight">LỚP 12AS4</h1>
-                    <p class="text-xs text-amber-700/80">Kho lưu trữ của lớp 12AS4</p>
-                </div>
+    <!-- TOAST THÔNG BÁO -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- BANNER NHẮC CẤU HÌNH NẾU CHƯA DÁN FIREBASE CONFIG -->
+    <div id="setupBanner" class="hidden bg-amber-900 text-amber-50 text-xs px-4 py-2.5 text-center">
+        ⚠️ Đang chạy ở <strong>Chế độ xem thử cục bộ</strong>. Hãy dán <code class="bg-black/30 px-1.5 py-0.5 rounded">firebaseConfig</code> của bạn vào code để cả lớp cùng đăng ảnh và xem chung!
+    </div>
+
+    <!-- HEADER STICKY -->
+    <header class="bg-[#FAF7F2]/90 backdrop-blur-lg sticky top-0 z-40 border-b border-amber-900/10 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-col lg:flex-row items-center justify-between gap-3.5">
+            <!-- Thương hiệu lớp -->
+            <div class="flex items-center justify-between w-full lg:w-auto">
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center text-2xl shadow-md shadow-amber-500/20 group-hover:rotate-6 transition-transform">
+                        🌻
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h1 class="font-serif text-xl sm:text-2xl font-bold text-amber-950 tracking-tight">LỚP 12AS4</h1>
+                            <span id="syncStatusBadge" class="text-[10px] font-semibold bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span> Đang kết nối...
+                            </span>
+                        </div>
+                        <p class="text-xs text-amber-900/70">Niên giám online • Cả lớp cùng lưu giữ thanh xuân</p>
+                    </div>
+                </a>
+
+                <button onclick="startSlideshow()" class="lg:hidden bg-rose-600 hover:bg-rose-700 text-white px-3.5 py-2 rounded-full text-xs font-semibold shadow-md flex items-center gap-1.5">
+                    <span>🎬</span> Trình chiếu
+                </button>
             </div>
 
-            <!-- THANH CÔNG CỤ -->
-            <div class="flex items-center gap-3 flex-wrap justify-center">
-                <div class="relative">
-                    <input type="text" id="searchInput" placeholder="Tìm kiếm kỉ niệm, bạn bè..." 
-                        class="pl-9 pr-4 py-2 bg-amber-50/60 border border-amber-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 w-52">
-                    <svg class="w-4 h-4 text-amber-500 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <!-- Thanh công cụ -->
+            <div class="flex items-center gap-2.5 flex-wrap justify-center w-full lg:w-auto">
+                <div class="relative flex-grow sm:flex-grow-0">
+                    <input type="text" id="searchInput" placeholder="Tìm kỉ niệm, tên bạn..." 
+                        class="pl-9 pr-8 py-2 bg-white border border-amber-900/15 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 w-full sm:w-52 shadow-inner transition">
+                    <svg class="w-4 h-4 text-amber-700/60 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-2.5 top-2 text-gray-400 hover:text-gray-700 text-sm">✕</button>
                 </div>
-                
-                <!-- Nút Trình Chiếu kèm Nhạc YouTube -->
-                <button onclick="startSlideshow()" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-full text-sm font-medium shadow-md transition flex items-center gap-1.5 animate-pulse">
-                    <span>🎬</span> Ôn lại tất cả kỉ niệm nhé
+
+                <button onclick="startSlideshow()" class="hidden lg:flex bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-md shadow-rose-600/20 transition items-center gap-1.5">
+                    <span>🎬</span> Ôn lại kỉ niệm
                 </button>
 
-                <button onclick="openAddMomentModal()" class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-full text-sm font-medium shadow-md transition flex items-center gap-1.5">
-                    <span>✨</span> + Thêm Khoảnh Khắc
+                <button onclick="openMomentModal()" class="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-full text-sm font-medium shadow-md shadow-amber-900/15 transition flex items-center gap-1.5">
+                    <span>✨</span> Thêm Sự Kiện
                 </button>
 
-                <!-- Nút chia sẻ dữ liệu lớp -->
-                <button onclick="exportClassData()" title="Tải file dữ liệu để gửi cho bạn bè trong lớp cùng gộp ảnh" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-full text-sm font-medium shadow-md transition">
-                    📥 Xuất File Lớp
+                <!-- Sao lưu dữ liệu dự phòng -->
+                <button onclick="exportClassData()" title="Tải bản sao lưu toàn bộ dữ liệu lớp về máy" class="bg-white hover:bg-emerald-50 text-emerald-700 border border-amber-900/15 px-3.5 py-2 rounded-full text-xs font-semibold shadow-sm transition flex items-center gap-1">
+                    <span>📥</span> Sao Lưu
                 </button>
-                <label class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-full text-sm font-medium shadow-md transition cursor-pointer">
-                    📤 Gộp File
-                    <input type="file" id="importFile" accept=".json" class="hidden" onchange="importClassData(event)">
-                </label>
             </div>
         </div>
     </header>
 
     <!-- MAIN CONTENT -->
-    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
-        <!-- Lời ngỏ tập thể -->
-        <section class="bg-gradient-to-r from-amber-100/60 via-orange-50/50 to-yellow-100/60 rounded-3xl p-6 sm:p-8 mb-10 border border-amber-200/60 shadow-sm text-center relative overflow-hidden">
-            <div class="absolute -right-10 -bottom-10 text-9xl opacity-5 select-none">🎓</div>
-            <h2 class="text-2xl font-bold text-amber-900 mb-2 handwritten text-3xl">"Hé Lô"</h2>
-            <p class="text-sm sm:text-base text-amber-800/90 max-w-2xl mx-auto leading-relaxed">
-                Nơi lưu giữ mọi khoảnh khắc thanh xuân của lớp 12AS4 (dự án  Bấm <strong class="text-rose-600">"cái nút đỏ đỏ")</strong> trên kia để xem nha ae
-            </p>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-grow w-full">
+
+        <!-- HERO EDITORIAL CARD -->
+        <section class="relative bg-white rounded-[2rem] p-6 sm:p-10 mb-8 border border-amber-900/10 shadow-sm overflow-hidden">
+            <div class="absolute -right-8 -top-10 text-[10rem] opacity-[0.04] select-none pointer-events-none">🎓</div>
+            <div class="absolute left-6 bottom-4 text-5xl opacity-[0.06] select-none pointer-events-none">🍂</div>
+
+            <div class="max-w-3xl mx-auto text-center relative z-10">
+                <span class="inline-block text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 bg-amber-100/80 px-3.5 py-1 rounded-full mb-3">
+                    Kỷ Yếu Online Tập Thể • 12AS4
+                </span>
+
+                <div id="introDisplay">
+                    <h2 id="introTitleText" class="font-hand text-4xl sm:text-5xl font-bold text-amber-950 mb-3">
+                        "Thanh xuân như một cơn mưa rào..."
+                    </h2>
+                    <p id="introBodyText" class="text-sm sm:text-base text-stone-600 leading-relaxed max-w-2xl mx-auto">
+                        Nơi lưu giữ từng nụ cười, những buổi học cuối cấp và mọi khoảnh khắc đáng nhớ của đại gia đình 12AS4. Hãy bấm "Ôn lại kỉ niệm" để cùng xem lại thước phim thanh xuân nhé!
+                    </p>
+                    <button onclick="toggleEditIntro(true)" class="mt-4 inline-flex items-center gap-1 text-xs text-amber-800/60 hover:text-amber-900 transition">
+                        <span>✏️</span> Chỉnh sửa lời ngỏ chung
+                    </button>
+                </div>
+
+                <div id="introEditForm" class="hidden space-y-3 text-left max-w-xl mx-auto bg-amber-50/70 p-4 rounded-2xl border border-amber-200">
+                    <div>
+                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-amber-900 mb-1">Tiêu đề lời ngỏ</label>
+                        <input type="text" id="introTitleInput" class="w-full px-3.5 py-2 bg-white border border-amber-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-amber-900 mb-1">Nội dung lời nhắn gửi cả lớp</label>
+                        <textarea id="introBodyInput" rows="2" class="w-full px-3.5 py-2 bg-white border border-amber-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button onclick="toggleEditIntro(false)" class="px-3.5 py-1.5 rounded-lg text-xs font-medium text-gray-600 hover:bg-white">Hủy</button>
+                        <button onclick="saveIntroEdit()" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-amber-800 text-white hover:bg-amber-900">Lưu cho cả lớp</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thanh thống kê -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto mt-8 pt-6 border-t border-amber-900/10">
+                <div class="bg-[#FAF7F2] rounded-2xl p-3 text-center">
+                    <div id="statEvents" class="font-serif text-2xl font-bold text-amber-950">0</div>
+                    <div class="text-xs text-stone-500">Dấu mốc sự kiện</div>
+                </div>
+                <div class="bg-[#FAF7F2] rounded-2xl p-3 text-center">
+                    <div id="statMedia" class="font-serif text-2xl font-bold text-amber-950">0</div>
+                    <div class="text-xs text-stone-500">Ảnh & Video</div>
+                </div>
+                <div class="bg-[#FAF7F2] rounded-2xl p-3 text-center">
+                    <div id="statAuthors" class="font-serif text-2xl font-bold text-amber-950">0</div>
+                    <div class="text-xs text-stone-500">Thành viên đóng góp</div>
+                </div>
+                <div class="bg-[#FAF7F2] rounded-2xl p-3 text-center">
+                    <div id="statFavorites" class="font-serif text-2xl font-bold text-rose-600">0</div>
+                    <div class="text-xs text-stone-500">Lượt thả tim</div>
+                </div>
+            </div>
         </section>
 
+        <!-- THANH LỌC & NHẢY NHANH -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <div class="flex items-center gap-2 flex-wrap" id="filterPills">
+                <button onclick="setMediaFilter('all')" data-filter="all" class="filter-btn active px-4 py-1.5 rounded-full text-xs font-semibold bg-amber-900 text-white shadow-sm transition">
+                    Tất cả
+                </button>
+                <button onclick="setMediaFilter('image')" data-filter="image" class="filter-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-stone-600 border border-amber-900/10 hover:bg-amber-50 transition">
+                    🖼️ Hình ảnh
+                </button>
+                <button onclick="setMediaFilter('video')" data-filter="video" class="filter-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-stone-600 border border-amber-900/10 hover:bg-amber-50 transition">
+                    🎥 Video
+                </button>
+                <button onclick="setMediaFilter('favorite')" data-filter="favorite" class="filter-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-stone-600 border border-amber-900/10 hover:bg-rose-50 transition">
+                    ❤️ Yêu thích
+                </button>
+            </div>
+
+            <div id="quickNavContainer" class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"></div>
+        </div>
+
         <!-- DANH SÁCH CÁC PHẦN KHOẢNH KHẮC -->
-        <div id="momentsContainer" class="space-y-12"></div>
+        <div id="momentsContainer" class="space-y-12">
+            <!-- Hiệu ứng khung xương lúc đang tải dữ liệu từ Cloud -->
+            <div class="bg-white rounded-[2rem] p-8 border border-amber-900/10 animate-pulse space-y-6">
+                <div class="h-6 bg-amber-100/70 rounded-full w-48"></div>
+                <div class="h-8 bg-amber-100 rounded-xl w-80"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                    <div class="aspect-square bg-amber-50 rounded-2xl"></div>
+                    <div class="aspect-square bg-amber-50 rounded-2xl"></div>
+                    <div class="aspect-square bg-amber-50 rounded-2xl"></div>
+                    <div class="aspect-square bg-amber-50 rounded-2xl"></div>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <!-- MODAL TRÌNH CHIẾU (SLIDESHOW) & PHÁT NHẠC YOUTUBE -->
-    <div id="slideshowModal" class="fixed inset-0 bg-black/95 z-50 hidden flex flex-col items-center justify-between p-6">
-        <div class="w-full flex items-center justify-between text-white max-w-5xl">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl">🎵</span>
-                <span id="slideshowTitle" class="text-sm sm:text-base font-medium opacity-90">Đang phát nhạc nền kỉ niệm từ YouTube...</span>
+    <!-- MODAL TRÌNH CHIẾU & NHẠC YOUTUBE -->
+    <div id="slideshowModal" class="fixed inset-0 bg-stone-950/95 backdrop-blur-xl z-50 hidden flex flex-col justify-between p-4 sm:p-6 select-none">
+        <div class="w-full max-w-5xl mx-auto">
+            <div class="w-full h-1 bg-white/15 rounded-full overflow-hidden mb-4">
+                <div id="slideProgressBar" class="h-full bg-gradient-to-r from-amber-400 to-rose-500 w-0 transition-all duration-100 ease-linear"></div>
             </div>
-            <button onclick="stopSlideshow()" class="text-white text-3xl font-light hover:text-rose-400 transition">✕</button>
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-white">
+                <div class="flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-full bg-rose-600/20 border border-rose-500/40 flex items-center justify-center text-base animate-pulse">🎵</span>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span id="slideshowCounter" class="text-xs font-bold uppercase tracking-wider text-amber-400">1 / 1</span>
+                            <span class="text-white/30">•</span>
+                            <span id="slideshowEventBadge" class="text-xs text-white/80 font-medium">Lớp 12AS4</span>
+                        </div>
+                        <p class="text-[11px] text-white/50">Nhạc nền YouTube đang phát • Dùng phím ← → hoặc Space</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="text" id="customYtInput" placeholder="Dán link nhạc YouTube khác..." 
+                        class="px-3 py-1.5 bg-white/10 border border-white/15 rounded-full text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400 w-48 sm:w-56">
+                    <button onclick="applyCustomYoutubeMusic()" class="px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 text-xs font-medium text-white transition">
+                        Đổi nhạc
+                    </button>
+                    <button onclick="stopSlideshow()" title="Đóng trình chiếu (ESC)" class="w-9 h-9 rounded-full bg-white/10 hover:bg-rose-600 text-white flex items-center justify-center text-lg transition ml-1">
+                        ✕
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div class="max-w-4xl max-h-[70vh] w-full flex flex-col items-center justify-center relative my-auto">
-            <img id="slideshowImg" src="" class="max-h-[65vh] max-w-full rounded-2xl object-contain shadow-2xl animate-fade-in border border-white/10">
-            <p id="slideshowCaption" class="text-white text-center mt-4 text-base font-medium px-6 py-2 bg-white/10 backdrop-blur-md rounded-full shadow-lg"></p>
+        <div id="slideshowTouchArea" class="max-w-5xl w-full mx-auto flex-grow flex flex-col items-center justify-center my-4 overflow-hidden">
+            <div class="relative max-h-[64vh] flex items-center justify-center overflow-hidden rounded-2xl shadow-2xl border border-white/10 bg-black/40">
+                <img id="slideshowImg" src="" alt="Kỷ niệm 12AS4" class="max-h-[64vh] max-w-full object-contain">
+            </div>
+            <div class="mt-4 text-center max-w-2xl px-4">
+                <p id="slideshowCaption" class="text-white text-base sm:text-lg font-medium leading-snug"></p>
+                <p id="slideshowAuthor" class="font-hand text-amber-300 text-xl mt-1"></p>
+            </div>
         </div>
 
-        <div class="flex items-center gap-6 text-white">
-            <button onclick="prevSlide()" class="px-5 py-2 rounded-full bg-white/20 hover:bg-white/30 transition text-sm">❮ Ảnh trước</button>
-            <button onclick="togglePauseSlide()" id="pauseBtn" class="px-6 py-2 rounded-full bg-rose-600 hover:bg-rose-700 transition text-sm font-semibold">Tạm dừng</button>
-            <button onclick="nextSlide()" class="px-5 py-2 rounded-full bg-white/20 hover:bg-white/30 transition text-sm">Ảnh tiếp ❯</button>
+        <div class="flex items-center justify-center gap-3 sm:gap-5 text-white pb-1">
+            <button onclick="prevSlide()" class="px-4 sm:px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 transition text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                <span>❮</span> Trước
+            </button>
+            <button onclick="togglePauseSlide()" id="pauseBtn" class="px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 transition text-xs sm:text-sm font-semibold shadow-lg shadow-rose-600/30 min-w-[115px]">
+                ⏸ Tạm dừng
+            </button>
+            <button onclick="nextSlide()" class="px-4 sm:px-5 py-2.5 rounded-full bg-white/10 hover:bg-white/20 transition text-xs sm:text-sm font-medium flex items-center gap-1.5">
+                Tiếp <span>❯</span>
+            </button>
         </div>
 
-        <!-- Khung phát nhạc YouTube ẩn -->
         <div id="ytMusicContainer" class="hidden"></div>
     </div>
 
-    <!-- MODAL THÊM KHOẢNH KHẮC -->
-    <div id="momentModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl relative my-8">
-            <h3 class="text-xl font-bold text-amber-900 mb-4 flex items-center gap-2"><span>📸</span> Tạo Phần Khoảnh Khắc Mới</h3>
-            <form id="momentForm" onsubmit="handleCreateMoment(event)" class="space-y-4">
+    <!-- MODAL TẠO / SỬA SỰ KIỆN -->
+    <div id="momentModal" class="fixed inset-0 bg-stone-950/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl relative my-8 border border-amber-900/10 animate-fade-up">
+            <h3 id="momentModalTitle" class="font-serif text-2xl font-bold text-amber-950 mb-1 flex items-center gap-2">
+                <span>📸</span> Tạo Dấu Mốc Sự Kiện Mới
+            </h3>
+            <p class="text-xs text-stone-500 mb-5">Sự kiện tạo xong sẽ hiển thị ngay cho tất cả thành viên lớp 12AS4.</p>
+
+            <form id="momentForm" onsubmit="handleSaveMoment(event)" class="space-y-4">
+                <input type="hidden" id="editMomentId">
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-amber-800 mb-1">Tên sự kiện / Khoảnh khắc</label>
-                    <input type="text" id="momentTitle" required placeholder="Ví dụ: Lễ tổng kết năm học..." 
-                        class="w-full px-4 py-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-amber-900 mb-1">Tên sự kiện / Khoảnh khắc *</label>
+                    <input type="text" id="momentTitle" required placeholder="Ví dụ: Lễ Tri Ân & Trưởng Thành 12AS4..." 
+                        class="w-full px-4 py-2.5 bg-[#FAF7F2] border border-amber-900/15 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/40 focus:border-amber-600 focus:outline-none">
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-amber-800 mb-1">Thời gian</label>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-amber-900 mb-1">Thời gian *</label>
                         <input type="text" id="momentDate" required placeholder="Tháng 05/2026" 
-                            class="w-full px-4 py-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                            class="w-full px-4 py-2.5 bg-[#FAF7F2] border border-amber-900/15 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/40 focus:border-amber-600 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-amber-800 mb-1">Địa điểm</label>
-                        <input type="text" id="momentLocation" placeholder="Trường THPT..." 
-                            class="w-full px-4 py-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-amber-900 mb-1">Địa điểm</label>
+                        <input type="text" id="momentLocation" placeholder="Sân trường THPT..." 
+                            class="w-full px-4 py-2.5 bg-[#FAF7F2] border border-amber-900/15 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/40 focus:border-amber-600 focus:outline-none">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-amber-800 mb-1">Mô tả ngắn</label>
-                    <textarea id="momentDesc" rows="2" placeholder="Vài dòng cảm xúc..." 
-                        class="w-full px-4 py-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-amber-900 mb-1">Lời dẫn / Cảm xúc chung</label>
+                    <textarea id="momentDesc" rows="2" placeholder="Vài dòng ghi lại không khí ngày hôm đó..." 
+                        class="w-full px-4 py-2.5 bg-[#FAF7F2] border border-amber-900/15 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/40 focus:border-amber-600 focus:outline-none"></textarea>
                 </div>
-                <div class="flex justify-end gap-3 pt-2">
-                    <button type="button" onclick="closeModal('momentModal')" class="px-5 py-2 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition">Hủy</button>
-                    <button type="submit" class="px-6 py-2 rounded-xl text-sm font-medium bg-amber-600 hover:bg-amber-700 text-white shadow-md transition">Tạo Mới</button>
+                <div class="flex justify-end gap-3 pt-3 border-t border-stone-100">
+                    <button type="button" onclick="closeModal('momentModal')" class="px-5 py-2.5 rounded-xl text-sm font-medium text-stone-600 hover:bg-stone-100 transition">Hủy</button>
+                    <button type="submit" id="momentSubmitBtn" class="px-6 py-2.5 rounded-xl text-sm font-semibold bg-amber-800 hover:bg-amber-900 text-white shadow-md transition">Đăng Sự Kiện</button>
                 </div>
             </form>
-            <button onclick="closeModal('momentModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+            <button onclick="closeModal('momentModal')" class="absolute top-5 right-5 w-8 h-8 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-700 flex items-center justify-center text-xl">×</button>
         </div>
     </div>
 
-    <!-- MODAL THÊM ẢNH/VIDEO -->
-    <div id="mediaModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl relative my-8">
-            <h3 class="text-xl font-bold text-amber-900 mb-4 flex items-center gap-2"><span>✨</span> Đăng Ảnh Hoặc Video Kỷ Niệm</h3>
+    <!-- MODAL THÊM ẢNH / VIDEO -->
+    <div id="mediaModal" class="fixed inset-0 bg-stone-950/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl relative my-8 border border-amber-900/10 animate-fade-up">
+            <h3 class="font-serif text-2xl font-bold text-amber-950 mb-1 flex items-center gap-2">
+                <span>✨</span> Đăng Ảnh Hoặc Video Lên Lớp
+            </h3>
+            <p class="text-xs text-stone-500 mb-5">Mọi thành viên trong lớp đều sẽ thấy kỷ niệm của bạn ngay lập tức.</p>
+
             <form id="mediaForm" onsubmit="handleAddMedia(event)" class="space-y-4">
                 <input type="hidden" id="targetMomentId">
-                <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-amber-800 mb-1">Loại nội dung</label>
-                    <select id="mediaType" onchange="toggleMediaTypeInput()" class="w-full px-4 py-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                        <option value="image">Hình ảnh (Tải nhiều ảnh từ máy)</option>
-                        <option value="video">Video (Dán link Youtube / Drive / MP4)</option>
-                    </select>
-                </div>
 
-                <div id="imageInputGroup">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-amber-800 mb-1">Chọn ảnh từ máy tính</label>
-                    <input type="file" id="imageFiles" accept="image/*" multiple 
-                        class="w-full px-4 py-2 bg-amber-50/50 border border-amber-200 rounded-xl text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200">
+                <div class="grid grid-cols-2 gap-2 p-1 bg-[#FAF7F2] rounded-xl border border-amber-900/10">
+                    <button type="button" id="tabImageBtn" onclick="switchMediaType('image')" class="py-2 rounded-lg text-xs font-semibold bg-white text-amber-950 shadow-sm transition">
+                        🖼️ Tải Hình Ảnh
+                    </button>
+                    <button type="button" id="tabVideoBtn" onclick="switchMediaType('video')" class="py-2 rounded-lg text-xs font-semibold text-stone-500 hover:text-amber-950 transition">
+                        🎥 Nhúng Video YouTube
+                    </button>
+                </div>
+                <input type="hidden" id="mediaType" value="image">
+
+                <div id="imageInputGroup" class="space-y-3">
+                    <div id="dropZone" onclick="document.getElementById('imageFiles').click()" 
+                        class="border-2 border-dashed border-amber-300 hover:border-amber-600 bg-amber-50/40 hover:bg-amber-50/80 rounded-2xl p-6 text-center cursor-pointer transition">
+                        <div class="text-3xl mb-1.5">📤</div>
+                        <p class="text-sm font-semibold text-amber-950">Kéo thả ảnh vào đây hoặc bấm để chọn</p>
+                        <p class="text-xs text-stone-500 mt-1">Hỗ trợ chọn nhiều ảnh cùng lúc (tự động nén siêu nhẹ)</p>
+                        <input type="file" id="imageFiles" accept="image/*" multiple class="hidden" onchange="handleFilesSelected(this.files)">
+                    </div>
+
+                    <div id="imagePreviewGrid" class="grid grid-cols-4 gap-2.5 empty:hidden"></div>
                 </div>
 
                 <div id="videoInputGroup" class="hidden">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-amber-800 mb-1">Đường dẫn Video</label>
-                    <input type="text" id="videoUrl" placeholder="https://www.youtube.com/embed/xxxx" 
-                        class="w-full px-4 py-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-amber-900 mb-1">Link Video YouTube</label>
+                    <input type="text" id="videoUrl" placeholder="Dán link youtube.com/watch?v=... hoặc youtu.be/..." 
+                        class="w-full px-4 py-2.5 bg-[#FAF7F2] border border-amber-900/15 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/40 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-amber-800 mb-1">Lời bình / Chú thích</label>
-                    <input type="text" id="mediaCaption" required placeholder="Khoảnh khắc này thật đẹp..." 
-                        class="w-full px-4 py-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-amber-900 mb-1">Lời bình / Chú thích kỷ niệm *</label>
+                    <input type="text" id="mediaCaption" required placeholder="Ví dụ: Cả tổ 2 cười không thấy mặt trời..." 
+                        class="w-full px-4 py-2.5 bg-[#FAF7F2] border border-amber-900/15 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/40 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-amber-800 mb-1">Tên bạn (Người đăng)</label>
-                    <input type="text" id="mediaAuthor" placeholder="Ví dụ: Gia Bảo" 
-                        class="w-full px-4 py-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-amber-900 mb-1">Tên bạn (Người đăng) *</label>
+                    <input type="text" id="mediaAuthor" required placeholder="Ví dụ: Gia Bảo" 
+                        class="w-full px-4 py-2.5 bg-[#FAF7F2] border border-amber-900/15 rounded-xl text-sm focus:ring-2 focus:ring-amber-500/40 focus:outline-none">
                 </div>
 
-                <div class="flex justify-end gap-3 pt-2">
-                    <button type="button" onclick="closeModal('mediaModal')" class="px-5 py-2 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition">Hủy</button>
-                    <button type="submit" class="px-6 py-2 rounded-xl text-sm font-medium bg-amber-600 hover:bg-amber-700 text-white shadow-md transition">Đăng Tải</button>
+                <div class="flex justify-end gap-3 pt-3 border-t border-stone-100">
+                    <button type="button" onclick="closeModal('mediaModal')" class="px-5 py-2.5 rounded-xl text-sm font-medium text-stone-600 hover:bg-stone-100 transition">Hủy</button>
+                    <button type="submit" id="uploadMediaSubmitBtn" class="px-6 py-2.5 rounded-xl text-sm font-semibold bg-amber-800 hover:bg-amber-900 text-white shadow-md transition">Đăng Lên Lớp</button>
                 </div>
             </form>
-            <button onclick="closeModal('mediaModal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+            <button onclick="closeModal('mediaModal')" class="absolute top-5 right-5 w-8 h-8 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-700 flex items-center justify-center text-xl">×</button>
         </div>
     </div>
 
-    <!-- LIGHTBOX XEM ẢNH ĐƠN -->
-    <div id="lightbox" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex flex-col items-center justify-center p-4">
-        <button onclick="closeLightbox()" class="absolute top-6 right-6 text-white text-3xl font-light hover:text-amber-300 transition">✕</button>
-        <div class="max-w-4xl max-h-[80vh] w-full flex items-center justify-center relative" id="lightboxContent"></div>
-        <p id="lightboxCaption" class="text-white text-center mt-4 text-sm font-medium px-4 py-1 bg-white/10 rounded-full"></p>
+    <!-- LIGHTBOX XEM ẢNH CHI TIẾT -->
+    <div id="lightbox" class="fixed inset-0 bg-stone-950/92 backdrop-blur-md z-50 hidden flex flex-col items-center justify-between p-4 sm:p-6">
+        <div class="w-full max-w-5xl flex items-center justify-between text-white">
+            <span id="lightboxCounter" class="text-xs font-semibold uppercase tracking-wider text-amber-300 bg-white/10 px-3 py-1 rounded-full">1 / 1</span>
+            <div class="flex items-center gap-2">
+                <a id="lightboxDownloadBtn" href="#" download="ky-niem-12as4.jpg" class="px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-medium text-white transition flex items-center gap-1.5">
+                    <span>⬇️</span> Tải ảnh
+                </a>
+                <button onclick="closeLightbox()" class="w-9 h-9 rounded-full bg-white/10 hover:bg-rose-600 text-white flex items-center justify-center text-xl transition">✕</button>
+            </div>
+        </div>
+
+        <div class="relative max-w-5xl w-full flex-grow flex items-center justify-center my-3">
+            <button onclick="navigateLightbox(-1)" class="absolute left-1 sm:left-4 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-lg border border-white/15 transition">❮</button>
+            <img id="lightboxImg" src="" alt="" class="max-h-[74vh] max-w-[85vw] rounded-2xl object-contain shadow-2xl border border-white/10">
+            <button onclick="navigateLightbox(1)" class="absolute right-1 sm:right-4 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center text-lg border border-white/15 transition">❯</button>
+        </div>
+
+        <div class="text-center max-w-2xl">
+            <p id="lightboxCaption" class="text-white text-sm sm:text-base font-medium px-5 py-2 bg-white/10 backdrop-blur-md rounded-full inline-block"></p>
+            <p id="lightboxAuthor" class="font-hand text-amber-300 text-xl mt-1"></p>
+        </div>
+    </div>
+
+    <!-- MODAL XÁC NHẬN HÀNH ĐỘNG -->
+    <div id="confirmModal" class="fixed inset-0 bg-stone-950/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-amber-900/10 text-center animate-fade-up">
+            <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-2xl mx-auto mb-3">⚠️</div>
+            <h4 id="confirmTitle" class="font-serif text-lg font-bold text-stone-900 mb-1">Xác nhận xóa?</h4>
+            <p id="confirmMessage" class="text-xs text-stone-500 mb-5 leading-relaxed">Hành động này sẽ xóa dữ liệu trên toàn bộ lớp.</p>
+            <div class="flex items-center justify-center gap-3">
+                <button onclick="closeConfirmModal()" class="flex-1 py-2.5 rounded-xl text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-700 transition">Hủy bỏ</button>
+                <button id="confirmOkBtn" class="flex-1 py-2.5 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white shadow-md transition">Đồng ý</button>
+            </div>
+        </div>
     </div>
 
     <!-- FOOTER -->
-    <footer class="bg-white border-t border-amber-100 py-6 text-center text-xs text-amber-800/70 mt-16">
-        <p>Được tạo với ❤️ cho tập thể lớp chúng mình • Năm 2026</p>
-        <button onclick="resetDefaultData()" class="mt-2 text-red-500 hover:underline">Khôi phục dữ liệu mẫu ban đầu</button>
+    <footer class="bg-white border-t border-amber-900/10 py-8 px-4 text-center text-xs text-stone-500 mt-16">
+        <p class="font-serif text-sm font-bold text-amber-950 mb-1">Tập Thể Lớp 12AS4 • Mãi Là Một Gia Đình ❤️</p>
+        <p class="text-stone-400">Đồng bộ thời gian thực trên đám mây • Mọi thành viên đều có thể đóng góp kỷ niệm</p>
     </footer>
 
-    <!-- JAVASCRIPT XỬ LÝ -->
-    <script>
-        const DEFAULT_MOMENT_DATA = [
+    <!-- FIREBASE REALTIME CLOUD SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import {
+            getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc,
+            onSnapshot, query, orderBy, getDocs, writeBatch, serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // =========================================================================
+        // 🔑 BƯỚC CẤU HÌNH DUY NHẤT: DÁN firebaseConfig CỦA BẠN VÀO DƯỚI ĐÂY
+        // =========================================================================
+        const firebaseConfig = {
+            apiKey: "DAN_API_KEY_CUA_BAN_VAO_DAY",
+            authDomain: "DAN_AUTH_DOMAIN_VAO_DAY",
+            projectId: "DAN_PROJECT_ID_VAO_DAY",
+            storageBucket: "DAN_STORAGE_BUCKET_VAO_DAY",
+            messagingSenderId: "DAN_SENDER_ID_VAO_DAY",
+            appId: "DAN_APP_ID_VAO_DAY"
+        };
+        // =========================================================================
+
+        const isConfigured = firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("DAN_");
+
+        const DEFAULT_INTRO = {
+            title: '"Thanh xuân như một cơn mưa rào..."',
+            body: 'Nơi lưu giữ từng nụ cười, những buổi học cuối cấp và mọi khoảnh khắc đáng nhớ của đại gia đình 12AS4. Hãy bấm "Ôn lại kỉ niệm" để cùng xem lại thước phim thanh xuân nhé!'
+        };
+        const DEFAULT_YT_ID = "9EwqXZtviTM";
+
+        let db = null;
+        let momentsList = [];
+        let mediaList = [];
+        let appSettings = { intro: { ...DEFAULT_INTRO }, youtubeId: DEFAULT_YT_ID };
+        let currentFilter = 'all';
+        let selectedUploadFiles = [];
+
+        // Dữ liệu mẫu hiển thị khi chưa gắn Firebase
+        const DEMO_MOMENTS = [
             {
-                id: "moment-1",
+                id: "demo-1",
                 title: "Lễ Trưởng Thành & Ngày Chụp Kỷ Yếu",
                 date: "Tháng 05/2026",
-                location: "Sân trường",
-                description: "Những tà áo dài thướt tha và những chiếc áo cử nhân lưu luyến ngày chia tay.",
-                items: [
-                    { type: 'image', url: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800', caption: 'Nụ cười rạng rỡ ngày hội trường', author: 'Lớp trưởng' },
-                    { type: 'image', url: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=800', caption: 'Khoảnh khắc tung mũ cử nhân', author: 'Minh Thư' }
-                ]
-            },
+                location: "Sân trường THPT",
+                description: "Những tà áo dài thướt tha và những chiếc áo cử nhân lưu luyến ngày chia tay mái trường."
+            }
+        ];
+        const DEMO_MEDIA = [
             {
-                id: "moment-2",
-                title: "Chuyến Dã Ngoại Cuối Tuần",
-                date: "Tháng 03/2026",
-                location: "Đà Lạt Mộng Mơ",
-                description: "Cùng nhau nướng BBQ dưới trời lạnh và hát hò bên lửa trại.",
-                items: [
-                    { type: 'image', url: 'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=800', caption: 'Đốt lửa trại ấm áp', author: 'Gia Bảo' }
-                ]
+                id: "demo-item-1",
+                momentId: "demo-1",
+                type: "image",
+                url: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1000",
+                caption: "Nụ cười rạng rỡ ngày hội trường của đại gia đình 12AS4",
+                author: "Lớp trưởng",
+                favorite: true
             }
         ];
 
-        let classMoments = JSON.parse(localStorage.getItem('class_moments_data_v3')) || DEFAULT_MOMENT_DATA;
+        // --- KHỞI TẠO KẾT NỐI ---
+        async function bootstrap() {
+            // Tự điền sẵn tên người đăng từ lần trước
+            const savedAuthor = localStorage.getItem('12as4_saved_author');
+            if (savedAuthor) {
+                document.getElementById('mediaAuthor').value = savedAuthor;
+            }
 
-        function saveToLocalStorage() {
-            localStorage.setItem('class_moments_data_v3', JSON.stringify(classMoments));
-        }
-
-        function renderMoments(filterText = '') {
-            const container = document.getElementById('momentsContainer');
-            container.innerHTML = '';
-
-            classMoments.forEach((moment) => {
-                const filteredItems = moment.items.filter(item => 
-                    item.caption.toLowerCase().includes(filterText.toLowerCase()) ||
-                    item.author.toLowerCase().includes(filterText.toLowerCase()) ||
-                    moment.title.toLowerCase().includes(filterText.toLowerCase())
-                );
-
-                if (filterText && filteredItems.length === 0 && !moment.title.toLowerCase().includes(filterText.toLowerCase())) return;
-                const itemsToDisplay = filterText ? filteredItems : moment.items;
-
-                const section = document.createElement('div');
-                section.className = 'bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-amber-100/80';
-                
-                let htmlContent = `
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-amber-100">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1 rounded-full">${moment.date}</span>
-                                <span class="text-xs text-amber-700/80">📍 ${moment.location || 'Việt Nam'}</span>
-                            </div>
-                            <h2 class="text-xl sm:text-2xl font-bold text-amber-900">${moment.title}</h2>
-                            <p class="text-sm text-gray-600 mt-1">${moment.description || ''}</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="openAddMediaModal('${moment.id}')" class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-1">
-                                <span>➕</span> Thêm Ảnh/Video
-                            </button>
-                            <button onclick="deleteMoment('${moment.id}')" title="Xóa phần này" class="p-2 text-gray-400 hover:text-red-600 rounded-xl hover:bg-red-50 transition">🗑️</button>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                `;
-
-                if (itemsToDisplay.length === 0) {
-                    htmlContent += `<div class="col-span-full py-8 text-center text-gray-400 text-sm">Chưa có ảnh hoặc video nào. Hãy bấm "Thêm Ảnh/Video" nhé!</div>`;
-                } else {
-                    itemsToDisplay.forEach((item, iIndex) => {
-                        const rotations = ['rotate-1', '-rotate-1', 'rotate-2', '-rotate-2'];
-                        const rot = rotations[iIndex % rotations.length];
-
-                        if (item.type === 'video') {
-                            htmlContent += `
-                                <div class="polaroid-card p-3 pb-4 rounded-2xl shadow-sm border border-amber-100/60 relative group ${rot}">
-                                    <div class="aspect-video w-full bg-black rounded-xl overflow-hidden relative">
-                                        <iframe src="${item.url}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
-                                    </div>
-                                    <div class="mt-3 flex items-start justify-between gap-2">
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-800 line-clamp-2">${item.caption}</p>
-                                            <p class="text-xs text-amber-800/80 mt-1 handwritten text-base font-bold">Đăng bởi: ${item.author || 'Thành viên lớp'}</p>
-                                        </div>
-                                        <button onclick="deleteMedia('${moment.id}', ${iIndex})" class="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition text-sm">✕</button>
-                                    </div>
-                                </div>
-                            `;
-                        } else {
-                            htmlContent += `
-                                <div class="polaroid-card p-3 pb-4 rounded-2xl shadow-sm border border-amber-100/60 relative group ${rot}">
-                                    <div class="aspect-square w-full bg-amber-50 rounded-xl overflow-hidden cursor-pointer relative" onclick="openLightbox('${item.url}', '${item.caption}')">
-                                        <img src="${item.url}" alt="${item.caption}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy">
-                                    </div>
-                                    <div class="mt-3 flex items-start justify-between gap-2">
-                                        <div>
-                                            <p class="text-sm font-medium text-gray-800 line-clamp-2">${item.caption}</p>
-                                            <p class="text-xs text-amber-800/80 mt-1 handwritten text-base font-bold">Đăng bởi: ${item.author || 'Thành viên lớp'}</p>
-                                        </div>
-                                        <button onclick="deleteMedia('${moment.id}', ${iIndex})" title="Xóa ảnh này" class="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition text-sm">✕</button>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                    });
-                }
-                htmlContent += `</div>`;
-                section.innerHTML = htmlContent;
-                container.appendChild(section);
-            });
-        }
-
-        // --- HỆ THỐNG SLIDESHOW & NHẠC YOUTUBE ---
-        let slideshowImages = [];
-        let currentSlideIndex = 0;
-        let slideshowTimer = null;
-        let isPaused = false;
-
-        function startSlideshow() {
-            slideshowImages = [];
-            classMoments.forEach(m => {
-                m.items.forEach(item => {
-                    if (item.type === 'image') {
-                        slideshowImages.push(item);
-                    }
-                });
-            });
-
-            if (slideshowImages.length === 0) {
-                alert('Chưa có bức ảnh nào để trình chiếu!');
+            if (!isConfigured) {
+                document.getElementById('setupBanner').classList.remove('hidden');
+                updateSyncBadge(false);
+                momentsList = [...DEMO_MOMENTS];
+                mediaList = [...DEMO_MEDIA];
+                renderIntro();
+                renderAll();
                 return;
             }
 
-            currentSlideIndex = 0;
-            document.getElementById('slideshowModal').classList.remove('hidden');
-            
-            // Phát nhạc YouTube (ID: 9EwqXZtviTM)
-            const youtubeVideoId = "";
-document.getElementById('ytMusicContainer').innerHTML = `
-    <iframe width="0" height="0"
-        src="https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1&loop=1&playlist=${youtubeVideoId}"
-        frameborder="0" allow="autoplay; encrypted-media">
-    </iframe>`;
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                updateSyncBadge(true);
 
-            showCurrentSlide();
-            startSlideInterval();
-        }
+                // 1. Lắng nghe lời ngỏ & nhạc nền thời gian thực
+                onSnapshot(doc(db, "settings", "main"), (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        appSettings.intro = {
+                            title: data.introTitle || DEFAULT_INTRO.title,
+                            body: data.introBody || DEFAULT_INTRO.body
+                        };
+                        appSettings.youtubeId = data.youtubeId || DEFAULT_YT_ID;
+                    }
+                    renderIntro();
+                });
 
-        function showCurrentSlide() {
-            if (slideshowImages.length === 0) return;
-            const item = slideshowImages[currentSlideIndex];
-            const imgEl = document.getElementById('slideshowImg');
-            imgEl.src = item.url;
-            document.getElementById('slideshowCaption').innerText = `✨ ${item.caption} (Đăng bởi: ${item.author || 'Lớp'})`;
-        }
+                // 2. Lắng nghe danh sách sự kiện thời gian thực
+                const qMoments = query(collection(db, "moments"), orderBy("createdAt", "desc"));
+                onSnapshot(qMoments, async (snapshot) => {
+                    if (snapshot.empty && !localStorage.getItem('12as4_seeded')) {
+                        localStorage.setItem('12as4_seeded', '1');
+                        await seedInitialCloudData();
+                        return;
+                    }
+                    momentsList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    renderAll();
+                });
 
-        function startSlideInterval() {
-            clearInterval(slideshowTimer);
-            slideshowTimer = setInterval(() => {
-                if (!isPaused) {
-                    nextSlide();
-                }
-            }, 4000);
-        }
+                // 3. Lắng nghe danh sách ảnh/video thời gian thực
+                const qMedia = query(collection(db, "media"), orderBy("createdAt", "asc"));
+                onSnapshot(qMedia, (snapshot) => {
+                    mediaList = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                    renderAll();
+                });
 
-        function nextSlide() {
-            currentSlideIndex = (currentSlideIndex + 1) % slideshowImages.length;
-            showCurrentSlide();
-        }
-
-        function prevSlide() {
-            currentSlideIndex = (currentSlideIndex - 1 + slideshowImages.length) % slideshowImages.length;
-            showCurrentSlide();
-        }
-
-        function togglePauseSlide() {
-            isPaused = !isPaused;
-            const btn = document.getElementById('pauseBtn');
-            btn.innerText = isPaused ? "Tiếp tục" : "Tạm dừng";
-            btn.className = isPaused ? "px-6 py-2 rounded-full bg-amber-600 hover:bg-amber-700 transition text-sm font-semibold" : "px-6 py-2 rounded-full bg-rose-600 hover:bg-rose-700 transition text-sm font-semibold";
-        }
-
-        function stopSlideshow() {
-            clearInterval(slideshowTimer);
-            document.getElementById('slideshowModal').classList.add('hidden');
-            document.getElementById('ytMusicContainer').innerHTML = "";
-            isPaused = false;
-            document.getElementById('pauseBtn').innerText = "Tạm dừng";
-        }
-
-        // --- CÁC HÀM TIỆN ÍCH KHÁC ---
-        document.getElementById('searchInput').addEventListener('input', (e) => renderMoments(e.target.value));
-
-        function openAddMomentModal() { document.getElementById('momentModal').classList.remove('hidden'); }
-        function openAddMediaModal(momentId) {
-            document.getElementById('targetMomentId').value = momentId;
-            document.getElementById('mediaModal').classList.remove('hidden');
-        }
-        function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
-
-        function toggleMediaTypeInput() {
-            const type = document.getElementById('mediaType').value;
-            if (type === 'video') {
-                document.getElementById('imageInputGroup').classList.add('hidden');
-                document.getElementById('videoInputGroup').classList.remove('hidden');
-            } else {
-                document.getElementById('imageInputGroup').classList.remove('hidden');
-                document.getElementById('videoInputGroup').classList.add('hidden');
+            } catch (err) {
+                console.error(err);
+                showToast("Lỗi kết nối Firebase. Hãy kiểm tra lại firebaseConfig!", "error");
+                updateSyncBadge(false);
             }
         }
 
-        function handleCreateMoment(e) {
-            e.preventDefault();
-            const newMoment = {
-                id: 'moment-' + Date.now(),
-                title: document.getElementById('momentTitle').value,
-                date: document.getElementById('momentDate').value,
-                location: document.getElementById('momentLocation').value,
-                description: document.getElementById('momentDesc').value,
-                items: []
-            };
-            classMoments.unshift(newMoment);
-            saveToLocalStorage();
-            renderMoments();
-            closeModal('momentModal');
-            document.getElementById('momentForm').reset();
+        async function seedInitialCloudData() {
+            if (!db) return;
+            await setDoc(doc(db, "settings", "main"), {
+                introTitle: DEFAULT_INTRO.title,
+                introBody: DEFAULT_INTRO.body,
+                youtubeId: DEFAULT_YT_ID
+            });
+            const mRef = await addDoc(collection(db, "moments"), {
+                title: "Lễ Trưởng Thành & Ngày Chụp Kỷ Yếu",
+                date: "Tháng 05/2026",
+                location: "Sân trường THPT",
+                description: "Những tà áo dài thướt tha và những chiếc áo cử nhân lưu luyến ngày chia tay mái trường.",
+                createdAt: Date.now()
+            });
+            await addDoc(collection(db, "media"), {
+                momentId: mRef.id,
+                type: "image",
+                url: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1000",
+                caption: "Nụ cười rạng rỡ ngày hội trường của đại gia đình 12AS4",
+                author: "Lớp trưởng",
+                favorite: true,
+                createdAt: Date.now()
+            });
         }
 
-        function handleAddMedia(e) {
+        function updateSyncBadge(online) {
+            const badge = document.getElementById('syncStatusBadge');
+            if (online) {
+                badge.className = "text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full flex items-center gap-1.5";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Online Cả Lớp`;
+            } else {
+                badge.className = "text-[10px] font-semibold bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full flex items-center gap-1.5";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Chế độ thử`;
+            }
+        }
+
+        // --- TIỆN ÍCH ---
+        function escapeHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const styles = {
+                success: 'bg-stone-900 text-white border-amber-500/40',
+                error: 'bg-rose-700 text-white border-rose-400/40',
+                info: 'bg-amber-900 text-white border-amber-400/40'
+            };
+            const icons = { success: '✨', error: '⚠️', info: '💡' };
+            toast.className = `${styles[type] || styles.success} pointer-events-auto px-4 py-3 rounded-2xl shadow-xl border text-xs sm:text-sm font-medium flex items-center gap-2.5 animate-fade-up`;
+            toast.innerHTML = `<span>${icons[type] || '✨'}</span><span class="flex-1">${escapeHtml(message)}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3400);
+        }
+
+        let confirmCallback = null;
+        function openConfirmModal(title, message, onConfirm) {
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmMessage').innerText = message;
+            confirmCallback = onConfirm;
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+        window.closeConfirmModal = () => {
+            document.getElementById('confirmModal').classList.add('hidden');
+            confirmCallback = null;
+        };
+        document.getElementById('confirmOkBtn').addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+            window.closeConfirmModal();
+        });
+
+        // --- LỜI NGỎ CHUNG ---
+        function renderIntro() {
+            document.getElementById('introTitleText').innerText = appSettings.intro.title;
+            document.getElementById('introBodyText').innerText = appSettings.intro.body;
+        }
+
+        window.toggleEditIntro = (editing) => {
+            const displayEl = document.getElementById('introDisplay');
+            const formEl = document.getElementById('introEditForm');
+            if (editing) {
+                document.getElementById('introTitleInput').value = appSettings.intro.title;
+                document.getElementById('introBodyInput').value = appSettings.intro.body;
+                displayEl.classList.add('hidden');
+                formEl.classList.remove('hidden');
+            } else {
+                displayEl.classList.remove('hidden');
+                formEl.classList.add('hidden');
+            }
+        };
+
+        window.saveIntroEdit = async () => {
+            const title = document.getElementById('introTitleInput').value.trim();
+            const body = document.getElementById('introBodyInput').value.trim();
+            if (!title || !body) return showToast('Vui lòng nhập đầy đủ nội dung!', 'error');
+
+            appSettings.intro = { title, body };
+            renderIntro();
+            window.toggleEditIntro(false);
+
+            if (db) {
+                await setDoc(doc(db, "settings", "main"), {
+                    introTitle: title,
+                    introBody: body,
+                    youtubeId: appSettings.youtubeId
+                }, { merge: true });
+                showToast('Đã cập nhật lời ngỏ cho cả lớp!');
+            } else {
+                showToast('Đã lưu tạm (Hãy gắn Firebase để đồng bộ online)', 'info');
+            }
+        };
+
+        // --- THỐNG KÊ & RENDER ---
+        function renderAll() {
+            const authorsSet = new Set();
+            let totalFavs = 0;
+
+            mediaList.forEach(item => {
+                if (item.favorite) totalFavs++;
+                if (item.author && item.author.trim()) authorsSet.add(item.author.trim().toLowerCase());
+            });
+
+            document.getElementById('statEvents').innerText = momentsList.length;
+            document.getElementById('statMedia').innerText = mediaList.length;
+            document.getElementById('statAuthors').innerText = authorsSet.size;
+            document.getElementById('statFavorites').innerText = totalFavs;
+
+            document.getElementById('quickNavContainer').innerHTML = momentsList.map(m => `
+                <a href="#${m.id}" class="whitespace-nowrap px-3 py-1 rounded-full bg-white hover:bg-amber-100 text-amber-900/80 hover:text-amber-950 border border-amber-900/10 text-xs font-medium transition">
+                    📌 ${escapeHtml(m.title)}
+                </a>
+            `).join('');
+
+            renderMoments();
+        }
+
+        window.setMediaFilter = (filter) => {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                const active = btn.dataset.filter === filter;
+                btn.className = active
+                    ? 'filter-btn active px-4 py-1.5 rounded-full text-xs font-semibold bg-amber-900 text-white shadow-sm transition'
+                    : 'filter-btn px-4 py-1.5 rounded-full text-xs font-semibold bg-white text-stone-600 border border-amber-900/10 hover:bg-amber-50 transition';
+            });
+            renderMoments();
+        };
+
+        window.clearSearch = () => {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            renderMoments();
+        };
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            document.getElementById('clearSearchBtn').classList.toggle('hidden', e.target.value.trim().length === 0);
+            renderMoments();
+        });
+
+        function renderMoments() {
+            const container = document.getElementById('momentsContainer');
+            const filterText = document.getElementById('searchInput').value.trim().toLowerCase();
+            container.innerHTML = '';
+
+            if (momentsList.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-3xl p-12 text-center border border-amber-900/10">
+                        <div class="text-5xl mb-3">📷</div>
+                        <h3 class="font-serif text-xl font-bold text-amber-950 mb-1">Chưa có dấu mốc kỷ niệm nào</h3>
+                        <p class="text-sm text-stone-500 mb-5">Hãy tạo sự kiện đầu tiên để cả lớp cùng đăng ảnh nhé!</p>
+                        <button onclick="openMomentModal()" class="bg-amber-800 hover:bg-amber-900 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition">
+                            ✨ Tạo Sự Kiện Đầu Tiên
+                        </button>
+                    </div>`;
+                return;
+            }
+
+            let visibleCount = 0;
+
+            momentsList.forEach(moment => {
+                const momentItems = mediaList.filter(i => i.momentId === moment.id);
+                const filteredItems = momentItems.filter(item => {
+                    const matchesType =
+                        currentFilter === 'all' ||
+                        (currentFilter === 'image' && item.type === 'image') ||
+                        (currentFilter === 'video' && item.type === 'video') ||
+                        (currentFilter === 'favorite' && item.favorite);
+
+                    const matchesSearch =
+                        !filterText ||
+                        item.caption.toLowerCase().includes(filterText) ||
+                        item.author.toLowerCase().includes(filterText) ||
+                        moment.title.toLowerCase().includes(filterText) ||
+                        (moment.location && moment.location.toLowerCase().includes(filterText));
+
+                    return matchesType && matchesSearch;
+                });
+
+                const titleMatches = filterText && (
+                    moment.title.toLowerCase().includes(filterText) ||
+                    (moment.location && moment.location.toLowerCase().includes(filterText))
+                );
+
+                if ((filterText || currentFilter !== 'all') && filteredItems.length === 0 && !titleMatches) return;
+
+                visibleCount++;
+                const itemsToDisplay = (filterText || currentFilter !== 'all') ? filteredItems : momentItems;
+                const tapeClasses = ['', 'washi-rose', 'washi-sage', 'washi-sky'];
+                const rotations = ['rotate-[-1.2deg]', 'rotate-[1.1deg]', 'rotate-[-0.8deg]', 'rotate-[1.4deg]'];
+
+                const cardsHtml = itemsToDisplay.length === 0
+                    ? `<div class="col-span-full py-10 text-center bg-[#FAF7F2] rounded-2xl border border-dashed border-amber-900/15">
+                           <p class="text-sm text-stone-500">Chưa có ảnh hoặc video nào trong mục này. Bấm <strong>"Thêm Ảnh / Video"</strong> để đóng góp nhé!</p>
+                       </div>`
+                    : itemsToDisplay.map((item, idx) => {
+                        const tapeClass = tapeClasses[idx % tapeClasses.length];
+                        const rotClass = rotations[idx % rotations.length];
+                        const favIcon = item.favorite ? '❤️' : '🤍';
+
+                        const mediaBlock = item.type === 'video'
+                            ? `<div class="aspect-video w-full bg-stone-900 rounded-xl overflow-hidden relative">
+                                   <iframe src="${escapeHtml(item.url)}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                               </div>`
+                            : `<div onclick="openLightboxById('${item.id}')" class="aspect-square w-full bg-amber-50 rounded-xl overflow-hidden cursor-zoom-in relative">
+                                   <img src="${item.url}" alt="${escapeHtml(item.caption)}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" loading="lazy">
+                                   <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition flex items-end justify-end p-2.5">
+                                       <span class="text-[11px] text-white bg-black/50 backdrop-blur-sm px-2.5 py-1 rounded-full">Phóng to 🔍</span>
+                                   </div>
+                               </div>`;
+
+                        return `
+                            <article class="polaroid-card p-3.5 pb-4 rounded-2xl border border-amber-900/10 relative group ${rotClass}">
+                                <div class="washi-tape ${tapeClass}"></div>
+                                ${mediaBlock}
+                                <div class="mt-3.5 flex items-start justify-between gap-2">
+                                    <div class="min-w-0 flex-1">
+                                        <p class="text-sm font-medium text-stone-800 line-clamp-2 leading-snug">${escapeHtml(item.caption)}</p>
+                                        <p class="font-hand text-base font-bold text-amber-900/85 mt-1 truncate">
+                                            — ${escapeHtml(item.author || 'Thành viên lớp')}
+                                        </p>
+                                    </div>
+                                    <div class="flex flex-col items-center gap-1 shrink-0">
+                                        <button onclick="toggleFavorite('${item.id}')" title="Thả tim" class="w-7 h-7 rounded-full hover:bg-rose-50 flex items-center justify-center text-sm transition active:scale-125">
+                                            ${favIcon}
+                                        </button>
+                                        <button onclick="confirmDeleteMedia('${item.id}')" title="Xóa mục này" class="w-7 h-7 rounded-full text-stone-300 hover:text-rose-600 hover:bg-rose-50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs transition">
+                                            ✕
+                                        </button>
+                                    </div>
+                                </div>
+                            </article>`;
+                    }).join('');
+
+                const section = document.createElement('section');
+                section.id = moment.id;
+                section.className = 'scroll-mt-24 bg-white rounded-[2rem] p-6 sm:p-8 shadow-sm border border-amber-900/10 animate-fade-up';
+                section.innerHTML = `
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-7 pb-5 border-b border-amber-900/10">
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap mb-1.5">
+                                <span class="bg-amber-100 text-amber-900 text-xs font-bold px-3 py-1 rounded-full">📅 ${escapeHtml(moment.date)}</span>
+                                ${moment.location ? `<span class="text-xs font-medium text-stone-500 bg-stone-100 px-3 py-1 rounded-full">📍 ${escapeHtml(moment.location)}</span>` : ''}
+                                <span class="text-xs text-stone-400">• ${momentItems.length} khoảnh khắc</span>
+                            </div>
+                            <h2 class="font-serif text-2xl sm:text-3xl font-bold text-amber-950">${escapeHtml(moment.title)}</h2>
+                            ${moment.description ? `<p class="text-sm text-stone-600 mt-1.5 max-w-3xl leading-relaxed">${escapeHtml(moment.description)}</p>` : ''}
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button onclick="openAddMediaModal('${moment.id}')" class="bg-amber-800 hover:bg-amber-900 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition flex items-center gap-1.5">
+                                <span>➕</span> Thêm Ảnh / Video
+                            </button>
+                            <button onclick="openEditMomentModal('${moment.id}')" title="Chỉnh sửa sự kiện" class="p-2.5 text-stone-500 hover:text-amber-900 rounded-xl bg-stone-100 hover:bg-amber-100/70 transition text-sm">
+                                ✏️
+                            </button>
+                            <button onclick="confirmDeleteMoment('${moment.id}')" title="Xóa sự kiện" class="p-2.5 text-stone-400 hover:text-rose-600 rounded-xl bg-stone-100 hover:bg-rose-50 transition text-sm">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pt-1">
+                        ${cardsHtml}
+                    </div>
+                `;
+                container.appendChild(section);
+            });
+
+            if (visibleCount === 0) {
+                container.innerHTML = `
+                    <div class="bg-white rounded-3xl p-10 text-center border border-amber-900/10">
+                        <p class="text-base font-medium text-stone-700 mb-1">Không tìm thấy kỷ niệm nào phù hợp</p>
+                        <button onclick="clearSearch(); setMediaFilter('all');" class="mt-3 px-4 py-2 rounded-full bg-amber-100 text-amber-900 text-xs font-semibold hover:bg-amber-200 transition">
+                            Xem tất cả kỷ niệm
+                        </button>
+                    </div>`;
+            }
+        }
+
+        // --- QUẢN LÝ SỰ KIỆN ---
+        window.openMomentModal = () => {
+            document.getElementById('editMomentId').value = '';
+            document.getElementById('momentForm').reset();
+            document.getElementById('momentModalTitle').innerHTML = '<span>📸</span> Tạo Dấu Mốc Sự Kiện Mới';
+            document.getElementById('momentSubmitBtn').innerText = 'Đăng Sự Kiện';
+            document.getElementById('momentModal').classList.remove('hidden');
+        };
+
+        window.openEditMomentModal = (momentId) => {
+            const m = momentsList.find(x => x.id === momentId);
+            if (!m) return;
+            document.getElementById('editMomentId').value = m.id;
+            document.getElementById('momentTitle').value = m.title;
+            document.getElementById('momentDate').value = m.date;
+            document.getElementById('momentLocation').value = m.location || '';
+            document.getElementById('momentDesc').value = m.description || '';
+            document.getElementById('momentModalTitle').innerHTML = '<span>✏️</span> Chỉnh Sửa Sự Kiện';
+            document.getElementById('momentSubmitBtn').innerText = 'Lưu Thay Đổi';
+            document.getElementById('momentModal').classList.remove('hidden');
+        };
+
+        window.handleSaveMoment = async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('editMomentId').value;
+            const payload = {
+                title: document.getElementById('momentTitle').value.trim(),
+                date: document.getElementById('momentDate').value.trim(),
+                location: document.getElementById('momentLocation').value.trim(),
+                description: document.getElementById('momentDesc').value.trim()
+            };
+
+            if (!db) {
+                if (editId) {
+                    const idx = momentsList.findIndex(m => m.id === editId);
+                    if (idx !== -1) momentsList[idx] = { ...momentsList[idx], ...payload };
+                } else {
+                    momentsList.unshift({ id: 'demo-' + Date.now(), ...payload });
+                }
+                renderAll();
+                window.closeModal('momentModal');
+                return showToast('Đã lưu tạm (Hãy gắn Firebase để cả lớp cùng thấy)', 'info');
+            }
+
+            try {
+                if (editId) {
+                    await updateDoc(doc(db, "moments", editId), payload);
+                    showToast('Đã cập nhật sự kiện cho cả lớp!');
+                } else {
+                    await addDoc(collection(db, "moments"), { ...payload, createdAt: Date.now() });
+                    showToast('Đã tạo sự kiện mới lên trang lớp!');
+                }
+                window.closeModal('momentModal');
+            } catch (err) {
+                showToast('Lỗi khi lưu sự kiện lên Cloud!', 'error');
+            }
+        };
+
+        window.confirmDeleteMoment = (momentId) => {
+            const m = momentsList.find(x => x.id === momentId);
+            if (!m) return;
+            openConfirmModal(
+                'Xóa sự kiện này?',
+                `Sự kiện "${m.title}" và toàn bộ ảnh bên trong sẽ bị xóa khỏi trang của cả lớp.`,
+                async () => {
+                    if (!db) {
+                        momentsList = momentsList.filter(x => x.id !== momentId);
+                        mediaList = mediaList.filter(i => i.momentId !== momentId);
+                        renderAll();
+                        return;
+                    }
+                    const batch = writeBatch(db);
+                    batch.delete(doc(db, "moments", momentId));
+                    mediaList.filter(i => i.momentId === momentId).forEach(i => {
+                        batch.delete(doc(db, "media", i.id));
+                    });
+                    await batch.commit();
+                    showToast('Đã xóa sự kiện.', 'info');
+                }
+            );
+        };
+
+        // --- ĐĂNG ẢNH / VIDEO LÊN CLOUD ---
+        window.openAddMediaModal = (momentId) => {
+            document.getElementById('targetMomentId').value = momentId;
+            document.getElementById('mediaForm').reset();
+            const savedAuthor = localStorage.getItem('12as4_saved_author');
+            if (savedAuthor) document.getElementById('mediaAuthor').value = savedAuthor;
+            selectedUploadFiles = [];
+            renderUploadPreviews();
+            window.switchMediaType('image');
+            document.getElementById('mediaModal').classList.remove('hidden');
+        };
+
+        window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
+
+        window.switchMediaType = (type) => {
+            document.getElementById('mediaType').value = type;
+            const imgBtn = document.getElementById('tabImageBtn');
+            const vidBtn = document.getElementById('tabVideoBtn');
+            if (type === 'image') {
+                imgBtn.className = 'py-2 rounded-lg text-xs font-semibold bg-white text-amber-950 shadow-sm transition';
+                vidBtn.className = 'py-2 rounded-lg text-xs font-semibold text-stone-500 hover:text-amber-950 transition';
+                document.getElementById('imageInputGroup').classList.remove('hidden');
+                document.getElementById('videoInputGroup').classList.add('hidden');
+            } else {
+                vidBtn.className = 'py-2 rounded-lg text-xs font-semibold bg-white text-amber-950 shadow-sm transition';
+                imgBtn.className = 'py-2 rounded-lg text-xs font-semibold text-stone-500 hover:text-amber-950 transition';
+                document.getElementById('videoInputGroup').classList.remove('hidden');
+                document.getElementById('imageInputGroup').classList.add('hidden');
+            }
+        };
+
+        const dropZone = document.getElementById('dropZone');
+        ['dragenter', 'dragover'].forEach(evt => {
+            dropZone.addEventListener(evt, (e) => { e.preventDefault(); dropZone.classList.add('border-amber-600', 'bg-amber-100/70'); });
+        });
+        ['dragleave', 'drop'].forEach(evt => {
+            dropZone.addEventListener(evt, (e) => { e.preventDefault(); dropZone.classList.remove('border-amber-600', 'bg-amber-100/70'); });
+        });
+        dropZone.addEventListener('drop', (e) => {
+            if (e.dataTransfer.files?.length) window.handleFilesSelected(e.dataTransfer.files);
+        });
+
+        window.handleFilesSelected = (fileList) => {
+            const imgs = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+            if (!imgs.length) return showToast('Vui lòng chỉ chọn file hình ảnh!', 'error');
+            selectedUploadFiles = selectedUploadFiles.concat(imgs);
+            renderUploadPreviews();
+        };
+
+        window.removeSelectedFile = (idx) => {
+            selectedUploadFiles.splice(idx, 1);
+            renderUploadPreviews();
+        };
+
+        function renderUploadPreviews() {
+            const grid = document.getElementById('imagePreviewGrid');
+            grid.innerHTML = '';
+            selectedUploadFiles.forEach((file, idx) => {
+                const url = URL.createObjectURL(file);
+                const div = document.createElement('div');
+                div.className = 'relative aspect-square rounded-xl overflow-hidden border border-amber-200';
+                div.innerHTML = `
+                    <img src="${url}" class="w-full h-full object-cover">
+                    <button type="button" onclick="removeSelectedFile(${idx})" class="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-xs flex items-center justify-center hover:bg-rose-600">✕</button>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function compressImageForCloud(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_DIM = 960;
+                        let { width, height } = img;
+                        if (width > height && width > MAX_DIM) {
+                            height = Math.round(height * (MAX_DIM / width));
+                            width = MAX_DIM;
+                        } else if (height >= width && height > MAX_DIM) {
+                            width = Math.round(width * (MAX_DIM / height));
+                            height = MAX_DIM;
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        let dataUrl = canvas.toDataURL('image/jpeg', 0.72);
+                        if (dataUrl.length > 850000) {
+                            dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+                        }
+                        resolve(dataUrl);
+                    };
+                    img.onerror = reject;
+                    img.src = event.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function extractYoutubeId(input) {
+            if (!input) return null;
+            const trimmed = input.trim();
+            if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+            const match = trimmed.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            return match ? match[1] : null;
+        }
+
+        window.handleAddMedia = async (e) => {
             e.preventDefault();
             const momentId = document.getElementById('targetMomentId').value;
             const mediaType = document.getElementById('mediaType').value;
-            const caption = document.getElementById('mediaCaption').value;
-            const author = document.getElementById('mediaAuthor').value || 'Thành viên lớp';
-            const moment = classMoments.find(m => m.id === momentId);
-            if (!moment) return;
+            const caption = document.getElementById('mediaCaption').value.trim();
+            const author = document.getElementById('mediaAuthor').value.trim() || 'Thành viên lớp';
+            localStorage.setItem('12as4_saved_author', author);
+
+            const submitBtn = document.getElementById('uploadMediaSubmitBtn');
 
             if (mediaType === 'video') {
-                let videoUrl = document.getElementById('videoUrl').value;
-                if (videoUrl.includes('watch?v=')) videoUrl = videoUrl.replace('watch?v=', 'embed/').split('&')[0];
-                else if (videoUrl.includes('youtu.be/')) videoUrl = videoUrl.replace('youtu.be/', 'www.youtube.com/embed/').split('?')[0];
-                moment.items.push({ type: 'video', url: videoUrl, caption, author });
-                saveToLocalStorage();
-                renderMoments();
-                closeModal('mediaModal');
-                document.getElementById('mediaForm').reset();
-            } else {
-                const fileInput = document.getElementById('imageFiles');
-                if (fileInput.files.length === 0) { alert('Chọn ít nhất một ảnh!'); return; }
+                const ytId = extractYoutubeId(document.getElementById('videoUrl').value);
+                if (!ytId) return showToast('Link YouTube chưa hợp lệ!', 'error');
 
-                let processedCount = 0;
-                Array.from(fileInput.files).forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = function(event) {
-                        const img = new Image();
-                        img.src = event.target.result;
-                        img.onload = function() {
-                            const canvas = document.createElement('canvas');
-                            const MAX_WIDTH = 1000, MAX_HEIGHT = 1000;
-                            let width = img.width, height = img.height;
-                            if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } }
-                            else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
-                            canvas.width = width; canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-                            moment.items.push({ type: 'image', url: canvas.toDataURL('image/jpeg', 0.8), caption, author });
-                            processedCount++;
-                            if (processedCount === fileInput.files.length) {
-                                saveToLocalStorage();
-                                renderMoments();
-                                closeModal('mediaModal');
-                                document.getElementById('mediaForm').reset();
-                            }
+                const itemData = {
+                    momentId,
+                    type: 'video',
+                    url: `https://www.youtube.com/embed/${ytId}`,
+                    caption,
+                    author,
+                    favorite: false,
+                    createdAt: Date.now()
+                };
+
+                if (!db) {
+                    mediaList.push({ id: 'demo-' + Date.now(), ...itemData });
+                    renderAll();
+                } else {
+                    await addDoc(collection(db, "media"), itemData);
+                }
+                window.closeModal('mediaModal');
+                showToast('Đã đăng video lên trang lớp!');
+            } else {
+                if (selectedUploadFiles.length === 0) return showToast('Bạn chưa chọn ảnh nào!', 'error');
+
+                submitBtn.disabled = true;
+                submitBtn.innerText = 'Đang tải lên Cloud...';
+
+                try {
+                    for (let i = 0; i < selectedUploadFiles.length; i++) {
+                        const compressedUrl = await compressImageForCloud(selectedUploadFiles[i]);
+                        const itemData = {
+                            momentId,
+                            type: 'image',
+                            url: compressedUrl,
+                            caption,
+                            author,
+                            favorite: false,
+                            createdAt: Date.now() + i
+                        };
+                        if (!db) {
+                            mediaList.push({ id: 'demo-' + Date.now() + i, ...itemData });
+                        } else {
+                            await addDoc(collection(db, "media"), itemData);
                         }
                     }
-                    reader.readAsDataURL(file);
-                });
-            }
-        }
-
-        function deleteMoment(momentId) {
-            if (confirm('Xóa phần khoảnh khắc này?')) {
-                classMoments = classMoments.filter(m => m.id !== momentId);
-                saveToLocalStorage();
-                renderMoments();
-            }
-        }
-
-        function deleteMedia(momentId, itemIndex) {
-            if (confirm('Xóa ảnh/video này?')) {
-                const moment = classMoments.find(m => m.id === momentId);
-                if (moment) { moment.items.splice(itemIndex, 1); saveToLocalStorage(); renderMoments(); }
-            }
-        }
-
-        function openLightbox(url, caption) {
-            document.getElementById('lightboxContent').innerHTML = `<img src="${url}" class="max-h-[75vh] max-w-full rounded-2xl object-contain shadow-2xl">`;
-            document.getElementById('lightboxCaption').innerText = caption;
-            document.getElementById('lightbox').classList.remove('hidden');
-        }
-        function closeLightbox() { document.getElementById('lightbox').classList.add('hidden'); }
-
-        function exportClassData() {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(classMoments));
-            const downloadAnchor = document.createElement('a');
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "ky_niem_lop_hoc.json");
-            document.body.appendChild(downloadAnchor);
-            downloadAnchor.click();
-            downloadAnchor.remove();
-        }
-
-        function importClassData(event) {
-            const fileReader = new FileReader();
-            if (event.target.files[0]) {
-                fileReader.readAsText(event.target.files[0], "UTF-8");
-                fileReader.onload = function(e) {
-                    try {
-                        const importedData = JSON.parse(e.target.result);
-                        if (Array.isArray(importedData)) {
-                            classMoments = importedData;
-                            saveToLocalStorage();
-                            renderMoments();
-                            alert('Gộp dữ liệu lớp thành công!');
-                        }
-                    } catch (err) { alert('Lỗi đọc file!'); }
+                    if (!db) renderAll();
+                    window.closeModal('mediaModal');
+                    showToast(`Đã đăng ${selectedUploadFiles.length} ảnh cho cả lớp cùng xem!`);
+                } catch (err) {
+                    showToast('Có lỗi xảy ra khi tải ảnh lên!', 'error');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Đăng Lên Lớp';
+                    selectedUploadFiles = [];
                 }
             }
-        }
+        };
 
-        function resetDefaultData() {
-            if (confirm('Khôi phục dữ liệu mẫu ban đầu?')) {
-                localStorage.removeItem('class_moments_data_v3');
-                classMoments = DEFAULT_MOMENT_DATA;
-                renderMoments();
+        window.toggleFavorite = async (itemId) => {
+            const item = mediaList.find(i => i.id === itemId);
+            if (!item) return;
+            const nextState = !item.favorite;
+            if (!db) {
+                item.favorite = nextState;
+                renderAll();
+                return;
             }
+            await updateDoc(doc(db, "media", itemId), { favorite: nextState });
+        };
+
+        window.confirmDeleteMedia = (itemId) => {
+            openConfirmModal(
+                'Xóa kỷ niệm này?',
+                'Ảnh/video này sẽ bị gỡ khỏi trang của cả lớp.',
+                async () => {
+                    if (!db) {
+                        mediaList = mediaList.filter(i => i.id !== itemId);
+                        renderAll();
+                        return;
+                    }
+                    await deleteDoc(doc(db, "media", itemId));
+                    showToast('Đã xóa kỷ niệm.', 'info');
+                }
+            );
+        };
+
+        // --- LIGHTBOX ---
+        let lightboxList = [];
+        let lightboxIndex = 0;
+
+        window.openLightboxById = (itemId) => {
+            lightboxList = mediaList.filter(i => i.type === 'image').map(item => {
+                const m = momentsList.find(x => x.id === item.momentId);
+                return { ...item, momentTitle: m ? m.title : 'Lớp 12AS4' };
+            });
+            lightboxIndex = lightboxList.findIndex(i => i.id === itemId);
+            if (lightboxIndex === -1) return;
+            renderLightboxSlide();
+            document.getElementById('lightbox').classList.remove('hidden');
+        };
+
+        function renderLightboxSlide() {
+            const item = lightboxList[lightboxIndex];
+            if (!item) return;
+            document.getElementById('lightboxImg').src = item.url;
+            document.getElementById('lightboxCaption').innerText = item.caption;
+            document.getElementById('lightboxAuthor').innerText = `— Đăng bởi ${item.author} (${item.momentTitle})`;
+            document.getElementById('lightboxCounter').innerText = `${lightboxIndex + 1} / ${lightboxList.length}`;
+            document.getElementById('lightboxDownloadBtn').href = item.url;
         }
 
-        renderMoments();
+        window.navigateLightbox = (step) => {
+            if (!lightboxList.length) return;
+            lightboxIndex = (lightboxIndex + step + lightboxList.length) % lightboxList.length;
+            renderLightboxSlide();
+        };
+        window.closeLightbox = () => document.getElementById('lightbox').classList.add('hidden');
+
+        // --- SLIDESHOW ---
+        let slideshowImages = [];
+        let currentSlideIndex = 0;
+        let slideProgressInterval = null;
+        let slideElapsed = 0;
+        const SLIDE_DURATION = 5000;
+        let isPaused = false;
+
+        window.startSlideshow = () => {
+            slideshowImages = mediaList.filter(i => i.type === 'image').map(item => {
+                const m = momentsList.find(x => x.id === item.momentId);
+                return { ...item, eventTitle: m ? m.title : 'Lớp 12AS4' };
+            });
+            if (!slideshowImages.length) return showToast('Chưa có bức ảnh nào để trình chiếu!', 'error');
+
+            currentSlideIndex = 0;
+            isPaused = false;
+            updatePauseButtonUI();
+            document.getElementById('slideshowModal').classList.remove('hidden');
+            mountYoutubeMusic(appSettings.youtubeId || DEFAULT_YT_ID);
+            showCurrentSlide();
+            startProgressLoop();
+        };
+
+        function mountYoutubeMusic(ytId) {
+            document.getElementById('ytMusicContainer').innerHTML = `
+                <iframe width="0" height="0"
+                    src="https://www.youtube.com/embed/${ytId}?autoplay=1&loop=1&playlist=${ytId}"
+                    frameborder="0" allow="autoplay; encrypted-media">
+                </iframe>`;
+        }
+
+        window.applyCustomYoutubeMusic = async () => {
+            const ytId = extractYoutubeId(document.getElementById('customYtInput').value);
+            if (!ytId) return showToast('Link YouTube chưa hợp lệ!', 'error');
+            appSettings.youtubeId = ytId;
+            mountYoutubeMusic(ytId);
+            document.getElementById('customYtInput').value = '';
+            if (db) await setDoc(doc(db, "settings", "main"), { youtubeId: ytId }, { merge: true });
+            showToast('Đã đổi nhạc nền trình chiếu!');
+        };
+
+        function showCurrentSlide() {
+            const item = slideshowImages[currentSlideIndex];
+            if (!item) return;
+            const imgEl = document.getElementById('slideshowImg');
+            imgEl.classList.remove('animate-ken-burns');
+            void imgEl.offsetWidth;
+            imgEl.src = item.url;
+            imgEl.classList.add('animate-ken-burns');
+
+            document.getElementById('slideshowCounter').innerText = `${currentSlideIndex + 1} / ${slideshowImages.length}`;
+            document.getElementById('slideshowEventBadge').innerText = item.eventTitle;
+            document.getElementById('slideshowCaption').innerText = item.caption;
+            document.getElementById('slideshowAuthor').innerText = `— Đăng bởi ${item.author || 'Thành viên 12AS4'}`;
+            slideElapsed = 0;
+            document.getElementById('slideProgressBar').style.width = '0%';
+        }
+
+        function startProgressLoop() {
+            clearInterval(slideProgressInterval);
+            slideProgressInterval = setInterval(() => {
+                if (isPaused) return;
+                slideElapsed += 100;
+                document.getElementById('slideProgressBar').style.width = `${Math.min(100, (slideElapsed / SLIDE_DURATION) * 100)}%`;
+                if (slideElapsed >= SLIDE_DURATION) window.nextSlide();
+            }, 100);
+        }
+
+        window.nextSlide = () => {
+            currentSlideIndex = (currentSlideIndex + 1) % slideshowImages.length;
+            showCurrentSlide();
+        };
+        window.prevSlide = () => {
+            currentSlideIndex = (currentSlideIndex - 1 + slideshowImages.length) % slideshowImages.length;
+            showCurrentSlide();
+        };
+
+        function updatePauseButtonUI() {
+            const btn = document.getElementById('pauseBtn');
+            btn.innerText = isPaused ? '▶ Tiếp tục' : '⏸ Tạm dừng';
+            btn.className = isPaused
+                ? 'px-6 py-2.5 rounded-full bg-amber-600 hover:bg-amber-700 transition text-xs sm:text-sm font-semibold shadow-lg min-w-[115px]'
+                : 'px-6 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 transition text-xs sm:text-sm font-semibold shadow-lg shadow-rose-600/30 min-w-[115px]';
+        }
+
+        window.togglePauseSlide = () => { isPaused = !isPaused; updatePauseButtonUI(); };
+        window.stopSlideshow = () => {
+            clearInterval(slideProgressInterval);
+            document.getElementById('slideshowModal').classList.add('hidden');
+            document.getElementById('ytMusicContainer').innerHTML = '';
+            isPaused = false;
+        };
+
+        // --- SAO LƯU ---
+        window.exportClassData = () => {
+            const payload = {
+                app: 'Lop12AS4_Yearbook_Online',
+                exportedAt: new Date().toISOString(),
+                intro: appSettings.intro,
+                moments: momentsList,
+                media: mediaList
+            };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `sao_luu_12AS4_${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            showToast('Đã tải xuống bản sao lưu toàn bộ ảnh lớp!');
+        };
+
+        // Phím tắt
+        document.addEventListener('keydown', (e) => {
+            const inSlideshow = !document.getElementById('slideshowModal').classList.contains('hidden');
+            const inLightbox = !document.getElementById('lightbox').classList.contains('hidden');
+            if (inSlideshow) {
+                if (document.activeElement.id === 'customYtInput') return;
+                if (e.key === 'ArrowRight') window.nextSlide();
+                else if (e.key === 'ArrowLeft') window.prevSlide();
+                else if (e.key === ' ') { e.preventDefault(); window.togglePauseSlide(); }
+                else if (e.key === 'Escape') window.stopSlideshow();
+            } else if (inLightbox) {
+                if (e.key === 'ArrowRight') window.navigateLightbox(1);
+                else if (e.key === 'ArrowLeft') window.navigateLightbox(-1);
+                else if (e.key === 'Escape') window.closeLightbox();
+            }
+        });
+
+        bootstrap();
     </script>
 </body>
 </html>
